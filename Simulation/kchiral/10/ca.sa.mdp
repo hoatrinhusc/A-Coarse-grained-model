@@ -1,0 +1,64 @@
+;Run control: Use Langevin dynamics. 
+integrator = sd
+;time step
+dt = 0.001 
+;number of integration steps 
+nsteps = 100000000
+;frequency to write coordinates to output trajectory .trr file 
+nstxout = 0 
+;frequency to write velocities to output trajectory .trr file 
+nstvout = 0 
+;frequency to write energies to log file 
+nstlog = 5000 
+;frequency to write energies to energy file 
+nstenergy = 5000 
+;frequency to write coordinates to .xtc trajectory 
+nstxtcout = 5000 
+;group(s) to write to .xtc trajectory. 
+;NOTE: group name "system" is defined if you are NOT using an index file. If you use an index file, all group references need to be consistent with the names given in the index file. Our webpage, by default, names the chains "1", "2", ... You can change these names to whatever you like, just make sure the mdp file uses the same naming scheme. For more information on group usage, please consult the Gromacs manual. 
+xtc_grps = system 
+;group(s) to write to energy file 
+energygrps = system 
+;Frequency to update the neighbor list (and the long-range forces, 
+;when using twin-range cut-off's). 
+nstlist = 20 
+;Make a grid in the box and only check atoms in neighboring grid cells 
+;when constructing a new neighbor list every nstlist steps. 
+ns_type = grid 
+rlist = 3.0
+cutoff-scheme = verlet
+;treatment of electrostatic interactions 
+rcoulomb = 3.0 
+;treatment of van der waals interactions 
+rvdw = 3.0
+;this tells gromacs to use the tables that we give it, instead of the standard interaction types 
+coulombtype = cut-off 
+vdwtype = cut-off
+;tables are not supported with verlet lists, meaning that calpha cannot scale
+;well with gromacs5. Usually this is not a problem since you only want to use
+;a single processor for small proteins. Note that -pd is not available in gromacs5
+;but instead openmp is used, but this is not available for cutoff-scheme group.
+;Basically, you should use gromacs4.6 for calpha!
+; Periodic boundary conditions in all the directions 
+pbc = xyz
+table-extension = 25 ; (nm) !IMPORTANT! Set this so that rvdw + table-extension equals half of the box's longest diagonal. 
+;Temperature coupling 
+tc-grps = system 
+tau_t = 1.0 ; Temperature coupling time constant. Smaller values = stronger coupling. 
+ref_t = 0.5 ; In reduced units (see Gromacs Manual for explanation. We find many proteins fold around T=100-120) 
+;Pressure coupling 
+Pcoupl = no 
+;Velocity generation 
+gen_vel = no 
+;gen_temp = 60.0 
+;gen_seed = -1 
+;ld_seed = -1 
+comm_mode = linear ; center of mass velocity removal. Make sure you select what is proper for your simulation. 
+;NOTE on comm_mode: When using periodic boundary conditions, which improves the speed of neighbor searching, removing the angular velocity will lead to a warning at the grompp stage of simulations. So long as the box size is properly sized, such that your system does not cross the boundaries, then this warning is harmless and you can simply issue -maxwarn X, where X is the number of allowed warning messages.
+; Simulated annealing
+annealing       = single      ; single sequence of points for each T-coupling group
+annealing_npoints       = 28                ; two points - start and end temperatures
+annealing_time=0 3000 5000 8000 10000 13000 15000 18000 20000 23000 25000 28000 30000 33000 35000 38000 40000 43000 45000 48000 50000 53000 55000 58000 60000 63000 65000 100000
+;time frame of heating - heat over period of 5 ns
+annealing_temp  = 150 150 130 130 120 120 110 110 100 100 90 90 80 80 70 70 60 60 50 50 40 40 30 30 20 20 10 10  ; start and end temperatures
+

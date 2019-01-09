@@ -1,0 +1,23 @@
+#include <fstream>
+#include <iostream>
+#include <cstdio>
+#include <iomanip>
+#include <cstring>
+#include <stdio.h>
+
+using namespace std;
+#define PI 3.14159265
+#define NUMCA NUMCA
+#define NUMCB NUMCB
+#define NATOM NATOM
+#define NUMAB NUMAB
+
+struct ATOMIC
+{
+  double x[NUMCA];
+  double y[NUMCA];
+  double z[NUMCA];
+  int num[NUMCA];
+};
+
+

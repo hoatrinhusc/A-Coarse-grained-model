@@ -1,0 +1,25 @@
+------------------- # Hoa Trinh # --------------------------------------------
+#DESCRIPTION
+In this folder you will generate charge for CAs and CBs beads by using the script "charge.py". 
+Script "table.c" is to generate the tabulated potential for Debye-Huckel potential.
+The 2 scripts are independent. Hence, which script to be excuted first is not important.
+
+#NEED:
+1. Input: MopacCharge
+2. Script: charge.py, table.c
+3. Output: CACB.charge
+
+#USAGE:
+python charge.py
+gcc table.c -o table -lm
+./table
+
+#TOPOLOGY:
+After getting CACB.charge, you add it to "SOD.top" (which is obtained from step 2.Topology) to get "SOD.charge.top".
+Or you add it to "SOD.Fi.top" (which is obtained from step 4.Crowders) to get "SOD.Fi.charge.top". 
+Diff the files to see how I added "CACB.charge" to "SOD.top".
+
+#Running Gromacs with tabulate potential
+gmx grompp -f minim.mdp -c CI2.gro -p CI2.top -o ci2.tpr
+ gmx mdrun -v -deffnm ci2 -table table_Debye.xvg -tablep table_Debye.xvg
+

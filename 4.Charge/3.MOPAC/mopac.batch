@@ -1,0 +1,11 @@
+#!/bin/bash
+
+#SBATCH -J mopac                        # Job Name
+#SBATCH -N 1                            # Total number of nodes requested
+#SBATCH --ntasks-per-node 20
+#SBATCH -t 4:00:00                      # Run time (hh:mm:ss) - 1.5 hours
+
+module load mopac/2016
+MOPAC2016.exe m2.mop 
+
+

@@ -1,0 +1,30 @@
+
+# The script "run.sh" will compile all the codes in 0.Cheungcode.Hoa, 1.Preparation and 2.Topology
+
+Usage:            sh run.sh     pdb                name   chain  model      map
+Example:          sh run.sh     noLoopsSOD1.pdb    SOD     A      GO        BTmap.dat
+
+# After running run.sh, you will get a ".top" and a ".ab.pdb" file which are ready to be used for normal Gromacs simulations,
+  i.e, no charge and no crowders.
+
+# You will need to modify ".top" file manually to get a topology with crowders. See Folder "3.Crowder" for instruction on how to add crowders.
+  In the folder, you will also find a Gromacs simulation for the system of SOD and 990 Ficoll crowders.
+
+# You will need to modify ".top" file manually to get a topology with charge. See Folder "4.Charge" for instruction on how to add charge. 
+  In the folder, you will also find a Gromacs simulation for SOD with Debye-Huckel potential.
+
+# In the folder "Simulation", you will find:
+  * Folders "amber_ene.minim" and "gromacs_ene.minim": energy minimization for SOD (no crowders, no charge) was performed by both Amber and
+    Gromacs to verify the validity of Hoa's code. The minimized energy obtained by Gromacs and Amber agreed well.
+  * Folder "kchiral": simulated annealing for SOD (no crowders, no charge) with different values of the improper dihedral force constant.
+    The best value of k is 30 which gives the smallest RMSD at T = 10 (in reduced unit)
+
+# Job left:
+  * I havent't compared Gromacs and Amber when adding crowders and charge.
+  * The modified source code of Gromacs works well for single version and for NVT ensemble. 
+    However, it might not work properly for NPT ensemble.
+  * I tested the single and the parallel version (with multi-threads) of the modified Gromacs source code for energy minimization.
+    The results obtained by single and parallel agree well. However, I haven't tested the parallel version for MD simulation 
+    (when we turn on temperature). I haven't tested the parallel version with GPU or other methods.
+
+

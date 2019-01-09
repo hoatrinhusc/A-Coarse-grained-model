@@ -1,0 +1,570 @@
+#!/usr/bin/perl -w
+# Script for calculating the 6-12 parameters in amber6 format.
+# Assigning BT L-J interactions to GO contacts and repulsive interactions to 
+# the rest of the contacts.
+# Modified by Antonios Samiotakis in 11/21/09 in line 250
+# so that   $BondEn = (1+$BondEn) * $GoEn; is changed to:
+#           $BondEn = $GoEn + $BondEn; 
+# Modified by Dirar (7/13/2011) to print the LJ Coefficient
+# to two files to be compatibale with AMBER PARM7
+
+
+### 	calc6-12out.GO.antonis.pl atomindex BTmap.dat pairindex crdfile
+
+
+use strict;
+
+my $ATOM = 200;
+my $GoEn = 0.6;
+my $RESNUM = 110;
+my $MAXLENGTH = $ATOM;
+my $FACTOR = 0.9;
+my $MAXCONTACT = 229;
+my $NTYPE = $ATOM;
+my $PAIRS = ($NTYPE*($NTYPE+1)/2);
+my $MAXPAIRS = ($PAIRS+1);
+
+my $sizefile = '';
+my $hamfile = '';
+my $mapfile = '';
+my $crdfile = '';
+my @coorx = ();
+my @coory = ();
+my @coorz = ();
+my @contactmaph = ();
+my @contactmapb = ();
+my %hammap = ();
+my @ressize = ();
+my %restype = ();
+
+my @godisth = ();
+my @godistb = ();
+my @repcn1 = (); #size dependent rep
+my @cn1 = (); #size dependent rep
+my @attcn2 = (); #size dependent epsilon
+my @cn2 = (); #size dependent rep
+
+my @convertindex = ();
+
+
+if (@ARGV < 4){die "usage: 6-12out.pl ressize.dat ham.dat contactmap.dat crd"; }
+
+$sizefile = shift @ARGV;
+$hamfile = shift @ARGV;
+$mapfile = shift @ARGV;
+$crdfile = shift @ARGV;
+
+open (INSIZE,$sizefile) or die "cant open $sizefile \n";
+open (INHAM,$hamfile) or die "cant open $hamfile \n";
+open (INMAP,$mapfile) or die "cant open $mapfile \n";
+open (INCRD,$crdfile) or die "cant open $crdfile \n";
+
+open (OUTr,">6-12out.dat.rep") or die "cant open 6-12out.dat.rep";
+open (OUTa,">6-12out.dat.att") or die "cant open 6-12out.dat.att";
+open (OUTHB,">hbond.inp") or die "cant open hbond.inp";
+open (OUTR,">rsize.inp") or die "cant open rsize.inp";
+#Hoa added BondEnergy.inp on 16 March 2018 
+open (OUTe,">BondEnergy.inp") or die "can't open BondEnergy.inp";
+
+#initialize
+  for(my $j=1;$j<$MAXPAIRS;$j++)
+{
+	$repcn1[$j]=0;
+	$attcn2[$j]=0;
+}
+
+& read_size ();
+& read_crd ();
+& read_ham ();
+& read_map ();
+& calc_dist();
+
+ & calc_nn (); #6-12 for nonnative
+
+& calc_go (); #6-12potential
+& print_out ();
+
+& calc_size();
+
+close OUTr;
+close OUTa;
+close OUTHB;
+close OUTR;
+close INCRD;
+close INMAP;
+close INHAM;
+close INSIZE;
+
+
+sub calc_size
+{
+
+my $i='';
+my $dist=0;
+my $a1=0;
+my $a2=0;
+my $size=0;
+	print OUTR $ATOM, "\n"; 
+       for (  $i = 0 ; $i < ($RESNUM) ; $i ++)
+	{
+
+#fortran index
+$a1= $convertindex[$i][0]; #ca
+$a2= $convertindex[$i][1]; #cb
+print $i, " ",$a1, " ",$a2 , "\n";
+
+
+# calcdist from ca to cb
+
+	$size=0.5*$FACTOR;
+	print OUTR $size,"\n";
+
+	unless ($restype{$i} eq 'gly')
+	{
+	$dist = ($coorx[$a1]-$coorx[$a2])**2+ ($coory[$a1]-$coory[$a2])**2+($coorz[$a1]-$coorz[$a2])**2;
+	$dist = sqrt($dist);
+	$dist = $dist*$FACTOR;
+	print OUTR $dist,"\n",
+	}
+
+	} 
+
+}
+sub print_out
+{
+
+printf(OUTr "FORMAT\n");
+my $count = 0;
+#fortran index
+
+print "\n\n";
+
+  for(my $j=1;$j<$MAXPAIRS;$j++)
+    {
+     printf(OUTr "  %.8le",$repcn1[$j]);
+#	 print $j, " " ,$repcn1[$j],"\n";
+      $count++;
+     if( ( ($count%5) eq 0 ) || ($MAXPAIRS-$j)<2) {printf(OUTr "\n");}
+    }
+
+
+
+printf(OUTa "FORMAT\n");
+$count = 0;
+  for(my $j=1;$j<$MAXPAIRS;$j++)
+    {
+
+     if($attcn2[$j] < 0) 
+	{ printf(OUTa " %.8le",$attcn2[$j]);
+	$count++}
+     else{
+          printf(OUTa "  %.8le",$attcn2[$j]);
+      $count++;}
+
+     if( ( ($count%5) eq 0 ) || ($MAXPAIRS-$j)<2) {printf(OUTa "\n");}
+    }
+
+}
+
+
+##### subroutines
+
+sub calc_dist{
+my $bond = '';
+my $a1 = 0;
+my $a2 = 0;
+my $i=0;
+my $j=0;
+
+       for (  $i = 0 ; $i < ($RESNUM) ; $i ++)
+       { for ( $j = 0 ; $j < ($RESNUM) ; $j ++){
+        if (defined $contactmaph[$i][$j] eq  1 ){
+
+	# hb;
+
+	$a1= $convertindex[$i][0];
+	$a2= $convertindex[$j][0];
+	$bond=($coorx[$a1]-$coorx[$a2])**2+ ($coory[$a1]-$coory[$a2])**2+($coorz[$a1]-$coorz[$a2])**2;
+	$bond = sqrt($bond);
+	$godisth[$i][$j]=$bond;
+	if ($i<$j ) {print "h ",$i," ",$a1," ",$j," ",$a2," ",$bond," ",$godisth[$i][$j],"\n";}
+	   }
+	if( defined $contactmapb[$i][$j] eq  1   )
+	{
+	#sidechain
+        $a1= $convertindex[$i][1];
+        $a2= $convertindex[$j][1];
+        $bond=($coorx[$a1]-$coorx[$a2])**2+ ($coory[$a1]-$coory[$a2])**2+($coorz[$a1]-$coorz[$a2])**2;
+        $bond = sqrt($bond);
+        $godistb[$i][$j]=$bond;
+#	if ($i<$j ) {print "b ",$i," ",$a1," ",$j," ",$a2," ",$bond," ",$godistb[$i][$j]," ", $coorx[$a1]," ",$coorx[$a2],"\n";}
+
+
+	}
+
+	  }
+	}
+
+}
+
+sub calc_go {
+
+my $posen = 0;
+my $negen = 0;
+my $attr = '';
+my $count=0; 
+my $BondEn;
+my $BondEnRAW;
+my $m = '';
+my $n = '';
+my $bond = '';
+my $bond6 = '';
+my $bond12 = '';
+my $i = '';
+my $j = '';
+# evaluate the coefficients for 6-12 potential on specific pairwise go contacts	# get mapping fortran index
+  
+print "\n"; 
+
+       for (  $i = 0 ; $i < ($ATOM) ; $i ++)
+       { for ( $j = $i ; $j < ($ATOM ); $j ++){
+        if ( defined ($contactmapb[$i][$j]) eq 1  ){
+
+#sidechain
+	 $m = $convertindex[$i][1] + 1;
+	 $n = $convertindex[$j][1] + 1;
+         $attr= $n*($n-1)/2;
+         $attr += $m;
+     
+	 $bond= $godistb[$i][$j];
+	 $bond6 = $bond**6;
+	 $bond12 = $bond6**2;
+	 $BondEnRAW= $hammap{$restype{$i}}{$restype{$j}}; 
+
+#	 print "Fortran index  ", $m," ",$n," ",$contactmapb[$i][$j]," ",$attr," ",$bond," ",$BondEn,"\n" ; 
+# test
+#	$BondEn = $GoEn;
+#	$attcn2[$attr]=2*$BondEn*$bond6; 
+#	$repcn1[$attr]=$BondEn*$bond12; 
+# end of test
+
+
+	if($BondEnRAW < -0.0001) { 
+	# amber only reads in + value
+	$BondEn = abs ($BondEnRAW);
+	$BondEn = $GoEn + $BondEn;
+	$attcn2[$attr]=2*$BondEn*$bond6; 
+	$repcn1[$attr]=$BondEn*$bond12;
+
+#Hoa add, convert kcal to kJ to suitable with Gromacs unit
+	printf(OUTe "%5d %10d   %11.9le\n",$m, $n, 4.184*$BondEn);
+#end Hoa 
+
+
+	$negen += $BondEn; 
+
+ if ($i<$j){print "Neg Fortran index", $i," ",$j," ",$bond," ",$restype{$i}," ",$restype{$j},"bonden ", $BondEn ," Negen ",$negen," ","cn2 ", $attcn2[$attr], "cn1", $repcn1[$attr],"\n";}
+
+		}
+
+	if($BondEnRAW > 0.0001 and $BondEnRAW < ($GoEn+0.00001) ){
+	
+	$BondEn = $GoEn - $BondEnRAW;
+
+#less attractive
+		$attcn2[$attr]= 2*$BondEn*$bond6;
+		$repcn1[$attr]=$BondEn*$bond12;
+
+#Hoa add
+       printf(OUTe "%5d %10d   %11.9le\n", $m, $n, 4.184*$BondEn);
+#end Hoa
+
+	$negen += $BondEn; 
+        if ($i<$j ){print "Pos Neg Fortran index ", $i," ",$j," ",$bond," ",$restype{$i}," ",$restype{$j},"Bonden ", $BondEn ," Negen  ",$negen," ","cn2  ", $attcn2[$attr]," cn1 ",$repcn1[$attr],"\n"; }
+		}
+
+
+	if($BondEnRAW > $GoEn){
+	# really have a repulsive energy
+	        $BondEn=$GoEn-$BondEnRAW ;
+		$attcn2[$attr]= 2*$BondEn*$bond6;
+		$repcn1[$attr]= -$BondEn*$bond12;
+
+#Hoa add
+ 	 printf(OUTe "%5d %10d   %11.9le\n", $m, $n, 4.184*$BondEn);
+#end Hoa
+
+	$posen += $BondEn; 
+       {print "Pos Rep Fortran index", $i," ",$j," ",$bond," ",$restype{$i}," ",$restype{$j}, $BondEn ," ",$posen," "," cn2 ", $attcn2[$attr]," cn1","$repcn1[$attr],","\n"; }
+		}
+
+
+	if($BondEnRAW < 0.0001 and $BondEnRAW > -0.0001){
+	
+	$BondEn = $GoEn ;
+		$attcn2[$attr]= 2*$BondEn*$bond6;
+		$repcn1[$attr]=$BondEn*$bond12;
+
+#Hoa add
+        printf(OUTe "%5d %10d   %11.9le\n", $m, $n, 4.184*$BondEn);
+#end Hoa
+
+	$negen += $BondEn; 
+        if ($i<$j ){print "Zero fortran index ", $i," ",$j," ",$bond," ",$restype{$i}," ",$restype{$j},"Bonden ", $BondEn ," Negen  ",$negen," ","cn2  ", $attcn2[$attr]," cn1 ",$repcn1[$attr],"\n"; }
+		}
+
+
+
+      } #end of if
+
+        if ( defined ($contactmaph[$i][$j]) eq 1 ){
+# go hb
+	 $m = $convertindex[$i][0] + 1;
+	 $n = $convertindex[$j][0] + 1;
+	$attr= $n*($n-1)/2;
+ 	$attr += $m;
+
+	 $bond= $godisth[$i][$j];
+	 $bond6 = $bond ** 6;
+	 $bond12 = $bond6 ** 2;
+	 $BondEn= $GoEn; 
+         $attcn2[$attr]=2*$BondEn*$bond6; 
+	 $repcn1[$attr]=$BondEn*$bond12; 
+
+#Hoa add
+        printf(OUTe "%5d %10d   %11.9le\n", $m, $n, 4.184*$BondEn);
+#end Hoa
+
+ if ($i<$j){
+   print "HB Fortran index", $i," ",$m," ",$j," ",$n," ",$bond," ",$restype{$i}," ",$restype{$j}, $BondEn ,"\n"; 
+
+#print OUTHB $m," ",$n,"\n"; 
+}
+
+	} # end of if
+	} # end of for
+       	 } #end of for
+ 
+	
+ 
+}
+
+sub calc_nn {
+
+my $attr;
+my $bond;
+my $r1;
+my $r2;
+#fortran index
+
+#cb-cb
+
+	for(my $i=0;$i<($RESNUM);$i++){
+	for(my $j=$i+2;$j<($RESNUM);$j++)
+	{
+	#fortran index;
+	$r1= $convertindex[$i][1]+1;
+	$r2= $convertindex[$j][1]+1;
+
+	$attr= $r2*($r2-1)/2;
+	$attr += $r1;
+     
+	$bond= $ressize[$i]+$ressize[$j];
+	$bond=$bond*$FACTOR;
+#	print $attr," ", $i," ",$r1," ", $j, " ",$r2," ",  $bond, "\n"; 
+
+		my $BondEn=$GoEn;
+		$bond = $bond ** 12;
+		$repcn1[$attr]=$BondEn*$bond;
+		$attcn2[$attr]=0;    
+	}}
+
+#ca-ca
+	for(my $i=0;$i<($RESNUM);$i++){
+	for(my $j=$i+4;$j<($RESNUM);$j++)
+	{
+	#fortran index;
+	$r1= $convertindex[$i][0]+1;
+	$r2= $convertindex[$j][0]+1;
+
+	$attr= $r2*($r2-1)/2;
+	$attr += $r1;
+	$bond= 0.5+0.5; #calpha=1.9AA
+	$bond=$bond*$FACTOR;
+#	print "aa" , $attr," ", $i," ",$r1," ", $j, " ",$r2," ",  $bond, "\n"; 
+
+		my $BondEn=$GoEn;
+		$bond = $bond ** 12;
+		$repcn1[$attr]=$BondEn*$bond; 
+		$attcn2[$attr]=0;    
+	}}
+
+#ca-cb
+	for(my $i=0;$i<($RESNUM);$i++){
+	for(my $j=$i+2;$j<($RESNUM);$j++)
+	{
+	#fortran index;
+	$r1= $convertindex[$i][0]+1;
+	$r2= $convertindex[$j][1]+1;
+
+	$attr= $r2*($r2-1)/2;
+	$attr += $r1;
+
+	$bond= 0.5+$ressize[$j];
+	$bond=$bond*$FACTOR;
+#	print $attr," ", $i," ",$r1," ", $j, " ",$r2," ",  $bond, "\n"; 
+
+		my $BondEn=$GoEn;
+		$bond = $bond ** 12;
+		$repcn1[$attr]=$BondEn*$bond; 
+		$attcn2[$attr]=0;    
+	}}
+
+#cb-ca
+	for(my $i=0;$i<($RESNUM);$i++){
+	for(my $j=$i+2;$j<($RESNUM);$j++)
+	{
+	#fortran index;
+	$r1= $convertindex[$i][1]+1;
+	$r2= $convertindex[$j][0]+1;
+
+	$attr= $r2*($r2-1)/2;
+	$attr += $r1;
+
+	$bond= 0.5+$ressize[$i];
+	$bond=$bond*$FACTOR;
+#	print $attr," ", $i," ",$r1," ", $j, " ",$r2," ",  $bond, "\n"; 
+
+		my $BondEn=$GoEn;
+		$bond = $bond ** 12;
+		$repcn1[$attr]=$BondEn*$bond; $cn1[$attr]=1;
+		$attcn2[$attr]=0;    
+	}}
+
+
+}
+
+sub read_map{
+my $count = 0;
+my ($type1,$type2,$r1,$r2);
+my $i= '';
+my $j= '';
+my $index = 0;
+
+
+
+	while (<INMAP>)
+	{
+	chomp ();
+	$count ++ ;
+	($type1,$type2,$r1,$r2) = split (' ',$_);
+
+# r1,r2 is resnum
+
+	if($type2 eq 'b'){ $contactmapb[$r1][$r2] = 1;
+
+#sidechain
+#	print "read b", $r1," ",$r2," ", $contactmapb[$r1][$r2],"\n";
+
+	} 
+	if($type2 eq 'h'){ 
+#hb
+	$contactmaph[$r1][$r2] = 1;
+#	print "read h", $r1," ",$r2," ", $contactmaph[$r1][$r2],"\n";
+
+}
+
+
+	}
+	
+#	for ( my $i = 0 ; $i < $count ; $i ++)
+#	{ for (my $j = 0 ; $j < $count ; $j ++){
+#	if ( defined $contactmap[$i][$j] > 0 ){ print $i," ",$j," ",$contactmap[$i][$j] ; }
+#	}}
+
+
+	if($count ne $MAXCONTACT) {die "$count ne MAXCONTACT\n";}
+}
+
+sub read_ham
+{
+my @list = ();
+my ($res1,$res2,$ener);
+
+	while (<INHAM>)
+	{
+	chomp ($_);
+	($res1, $res2, $ener) = split (' ',$_); 		
+	$hammap{$res1}{$res2} = $ener;	
+	$hammap{$res2}{$res1} = $ener;	
+	}
+
+        foreach my $r1 (sort keys %hammap){
+	 foreach my $r2 (keys %{$hammap{$r1}}){
+#	print $r1," ",$r2, " ",$hammap{$r1}{$r2},"\n";
+
+	}}
+
+}
+
+sub read_size
+{
+
+my @list = ();
+my $cindex = 0;
+my $resnum = 0;
+my $num = 0;
+
+# cindex
+	while (<INSIZE>)
+	{
+
+	@list = split (' ', $_);
+	push @ressize, $list[2]; 	
+	$restype{$list[0]} = lc $list[1];
+
+
+	$num = 2;
+	if( $list[1] eq 'GLY') {$num = 1;}
+		for (my $i = 0 ; $i < $num; $i ++)
+		{
+		$convertindex[$resnum][$i]= $cindex;
+	        print $restype{$list[0]}," ",$list[0]," ",$list[1], " ",$cindex,"\n";
+		$cindex ++ ;	
+		}	
+	if( $list[1] eq 'GLY') 
+	{$convertindex[$resnum][1]= $convertindex[$resnum][0];}
+
+	$resnum ++ ;	
+
+	}
+
+
+#	print @ressize;
+
+}
+sub read_crd
+{
+
+my $count = 0;
+my $in = '';
+my @list = ();
+
+$in = <INCRD>; #first line
+chomp($_ =  <INCRD>); #second line
+
+ s/ //g;
+
+        if($_ ne $ATOM){ print "$_ is not eq to $ATOM";}
+
+        while (<INCRD>)
+        {
+        chomp ($_);
+	@list = split ;
+	push @coorx, $list[0],$list[3];	
+	push @coory, $list[1],$list[4];	
+	push @coorz, $list[2],$list[5];	
+	}
+#	print @coorx;
+}
+

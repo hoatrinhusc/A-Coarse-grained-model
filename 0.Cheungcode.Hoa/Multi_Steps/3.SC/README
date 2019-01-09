@@ -1,0 +1,54 @@
+OBJECTIVE:
+In this directory you create the list of SC native contacts 
+based on the pdb structure.
+__________________________________________________________________________
+
+STEPS:
+
+1) run step3.csh
+
+	./step3.csh name chain
+
+name: is any name you prefer for all the files used
+chain: the name of the chain in the pdb file
+
+example: ./step3.csh cfd A
+
+2) copy the new PDB , SC, PAIR, NUM, IOab.h, and IOab.1.h files  to 4.PRMTOP directory
+
+__________________________________________________________________________
+
+NOTES:
+
+1) The input files:
+
+	PDB file
+	NUM file
+
+2) The needed scripts and other files:
+
+	a) c code 
+
+	        resc.c						  	  : generates SC contacts (see reference)
+
+	b) shell scripts 
+		
+		step3.csh						  : the main script
+
+	c) perl scripts
+
+		makemap.ab.pl 						  : extracts the SC pair list 
+
+	d) header file
+
+		IOab.header (template, will be updated in step3.csh)  	  : header file
+		IOab.1.header (template, will be updated in step3.csh)    : header file
+
+3) The output files:
+
+	SC								  : SC contact pair index file
+	PAIR								  : PAIR contact pair index file
+	IOab.h  							  : updated header file
+	IOab.1.h    							  : updated header file
+
+4) The script "step3.csh" has more comments.

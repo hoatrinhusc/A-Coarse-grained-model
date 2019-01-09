@@ -1,0 +1,35 @@
+---------------------- Written by Hoa Trinh ---------------------
+
+1. * Make sure you do:
+	module load gcc/5.3.0 intel/psxe-2015-64-bit
+   * Make sure you have the modified version of Gromacs 2016.4
+
+2. Manually create a box of only one crowder, see file "ficoll.gro"
+
+3. Replicate the box to get many crowders:
+	 gmx genconf -f ficoll.gro -o ficoll.box.gro -nbox 10 11 9 -rot
+   * Note:
+	 You should change -nbox 10 11 9 to whatever number to create the wanted number of crowders.
+         For example, the above command will create a box of 10*11*9 = 990 crowders
+
+4. Minimization the box of crowders (See folder "990Ficoll"):
+	gmx grompp -f minim.mdp -c ficoll.box.gro -p fi.top -o minim.tpr
+	gmx mdrun -v -deffnm minim
+   Note about LJ interaction (see file "fi.top"):
+	* Factor 4 is coded in Gromacs for LJ interaction with combination rule 2,hence, epsilon is set as 0.6/4=0.15
+	* sigma = -2*(55/3.8)*0.1 = -2.8947  
+   You might want to modify the fi.top for your crowders. 
+
+5. Minimization the box of crowders and protein (See folder "SOD.CACB.Nocharge.Ficoll"):
+   * Copy SOD.top and SOD.ab.pdb from "2.Topology" to "SOD.CACB.Nocharge.Ficoll".
+   * After coppying, made 3 changes in SOD.top manually to insert Ficoll topology. Diff SOD.top and SOD.Fi.top to see the changes.
+   * cp 990Ficoll/minim.gro SOD.CACB.Nocharge.Ficoll
+   * Manually create "fi.itp" to include in SOD.Fi.top
+   * After that, use the sequence of commands:
+	gmx editconf -f SOD.ab.pdb -o SOD.gro
+ 	gmx solvate -cp SOD.gro -cs minim.gro -maxsol 990 -box 30 30 30 -o SOD.Fi.gro
+  	gmx grompp -f minim.mdp -c SOD.Fi.gro -p SOD.Fi.top
+ 	gmx mdrun -v -deffnm topol 
+
+
+

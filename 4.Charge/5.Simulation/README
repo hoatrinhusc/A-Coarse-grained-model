@@ -1,0 +1,5 @@
+------------------- # Hoa Trinh # --------------------------------------------
+gmx editconf -f SOD.ab.pdb -o SOD.gro -box 12 12 12
+gmx grompp -f minim.mdp -c SOD.gro -p SOD.charge.top -o SOD.tpr
+gmx mdrun -v -deffnm SOD -table table_Debye.xvg -tablep table_Debye.xvg
+

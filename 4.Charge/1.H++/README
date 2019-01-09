@@ -1,0 +1,11 @@
+Supply "noLoopsSOD1.pdb" for H++ server to get the output 0.15_80_10_pH7.0_noLoopsSOD1.result.pdb,
+in which H atoms are added to the initial pdb file.
+Parameters used:
+	Salinity: 0.15
+	Internal Dielectric: 10
+	External Dielectric: 80
+	pH: 7.0
+Total charge of SOD at pH=7 is -1 according to H++ server calculation
+Change name for convenience:
+cp 0.15_80_10_pH7.0_noLoopsSOD1.result.pdb SOD_H++.pdb
+

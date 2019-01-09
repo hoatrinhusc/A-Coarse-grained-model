@@ -1,0 +1,19 @@
+# This file was created Sun May 20 09:07:02 2018
+# Created by:
+#                       :-) GROMACS - gmx rms, 2016.4 (-:
+# 
+# Executable:   /home/thoa/gromacs-2016.4-modified/build/bin//gmx
+# Data prefix:  /home/thoa/gromacs-2016.4-modified (source tree)
+# Working dir:  /uhpc/cheung/hoa/CACB.DH.CROWDER.GROMACS/kchiral/50
+# Command line:
+#   gmx rms -s SOD.gro -f topol.gro
+# gmx rms is part of G R O M A C S:
+#
+# GRoups of Organic Molecules in ACtion for Science
+#
+@    title "RMSD"
+@    xaxis  label "Time (ps)"
+@    yaxis  label "RMSD (nm)"
+@TYPE xy
+@ subtitle "System after lsq fit to System"
+   0.0000000    0.5902841

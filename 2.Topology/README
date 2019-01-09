@@ -1,0 +1,53 @@
+#Written by Hoa Trinh on 12/18/2017
+---------------------------------------------------------------------------------------------
+
+#OBJECTIVE:
+In this directory you will create the Gromacs topology file for the coarse-grained model described in the paper:
+"Exploring the Interplay between Topology and Secondary Structural Formation in the Protein Folding Problem",
+Cheung et al, J. Phys. Chem. B 2003, 107, 11193-11200   
+
+**********************************************************************************
+
+#STEPS:
+
+1) Command Line
+
+                   ./step2.csh  name
+
+name: name of protein 
+
+Example:                ./step2.csh ci2
+
+
+***********************************************************************************
+
+#NOTES:
+
+1) The input files:
+
+	1.Preparation/name.ab.pdb
+        0.Cheungcode.Hoa/Multi_Steps/1.CACB/INDEX.name.ATOM
+        0.Cheungcode.Hoa/Multi_Steps/4.PRMTOP/BondEnergy.inp
+	0.Cheungcode.Hoa/Multi_Steps/1.CACB/name.num
+	0.Cheungcode.Hoa/Multi_Steps/4.PRMTOP/pseudo.inp (remove the first line of the file)
+
+2) The needed scripts and other files:
+
+	a) cpp code
+
+		main.cpp						  : calculates the number of native pairs
+
+	b) shell scripts 
+		
+		step2.csh						  : the main script
+
+
+	c) header file
+
+		common.header                                             : template, will be updated in step1.csh
+		common.h                                                  : updated header file
+
+3) The output files:
+
+	name.top						          : Gromacs topology file
+

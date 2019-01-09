@@ -1,0 +1,5 @@
+------------------- Hoa Trinh 05/20/2018 --------------------------
+Simulated annealing (SA) to choose the best value of the force constant of improper dihedral term.
+Several values of k_imporper (=10,20,30,40,50) are chosen for the simulation.
+Calculation of Root mean square deviation shows that k_improper = 30 is the better choice than other values.
+

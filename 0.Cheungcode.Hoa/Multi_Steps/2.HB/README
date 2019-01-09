@@ -1,0 +1,47 @@
+OBJECTIVE:
+In this directory you create the list of HB native contacts 
+based on the pdb structure.
+__________________________________________________________________________
+
+STEPS:
+
+1) run step2.csh
+
+	./step2.csh name
+
+name: is any name you prefer for all the files used
+
+example: ./step2.csh cfd 
+
+
+2) copy the HB file to 3.HB 
+__________________________________________________________________________
+
+NOTES:
+
+1) The input files:
+
+	PDB file
+	NUM file
+
+2) The needed scripts and other files:
+
+
+	a) shell scripts 
+		
+		step2.csh						  : the main script
+
+	b) perl scripts
+
+		hbond-dssp.pl						  : extract HB pairs
+	 	clean_HBlist.pl						  : cleans HB list	
+
+	c) executable 
+
+		dssp							  : DSSP algorithm exec (see reference)
+
+3) The output files:
+
+	HB								  : HB pair index file
+
+4) The script "step2.csh" has more comments.

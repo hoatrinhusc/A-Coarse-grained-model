@@ -1,0 +1,11 @@
+#!/bin/bash
+#SBATCH -J sa
+
+#SBATCH -N 1
+
+#SBATCH --ntasks-per-node 10  # number of processors per node 
+
+#SBATCH -t 80:00:00 
+
+##(for dir in 1 2 3 4 5 6 7 8 9 10 ; do cd $dir; grompp -f sim -c confout -t equil-state; cd ..; done)
+gmx mdrun -nt 10 -v -deffnm topol

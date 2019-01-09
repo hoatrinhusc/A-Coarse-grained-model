@@ -1,0 +1,3 @@
+#DESCRIPTION ABOUT THE FOLDERS:
+* "amber_ene.minim" and "gromacs_ene.minim": energy minimization for SOD (no crowders, no charge) was performed by both Amber and Gromacs to verify the validity of Hoa's code.
+* "kchiral": simulated annealing for SOD (no crowders, no charge) with different values of the force constant of an improper dihedral angle. The best value of k is 30 which gives the smallest RMSD at T = 10 (in reduced unit) 

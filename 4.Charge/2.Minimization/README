@@ -1,0 +1,11 @@
+---------------------Hoa Trinh---------------------------------------------------
+Sequence of commands:
+cp ../1.H++/SOD_H++.pdb .
+gmx pdb2gmx -f SOD_H++.pdb -o SOD.H++.gro -p SOD.top -ignh
+# After that, pdb2gmx will prompt you to choose force field and water model.#
+# Choose no water; Choose force field: amber99sb-ildn                       #
+gmx editconf -f SOD.H++.gro -o SOD.H++.PBC.gro -bt cubic -c -box 5 5 5 -d 1.0
+gmx grompp -f minim.mdp -c SOD.H++.PBC.gro -p SOD.top -o em-vac.tpr
+gmx mdrun -v -deffnm em-vac
+gmx editconf -f em-vac.gro -o min.pdb
+

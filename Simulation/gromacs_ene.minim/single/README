@@ -1,0 +1,4 @@
+gmx editconf -f SOD.ab.pdb -o SOD.gro
+gmx grompp -f minim.mdp -c SOD.gro -p SOD.top -o minim.tpr
+gmx mdrun -v -deffnm minim -nt 1
+

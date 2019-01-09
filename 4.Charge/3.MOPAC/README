@@ -1,0 +1,14 @@
+* cp ../2.Minimization/min.pdb .
+* cp min.pdb m2.mop
+* Delete all the lines before ATOM and add the following lines:mozyme geo-ok residues 1scf eps=78.4
+* sbatch mopac.batch
+* when mopac is done, you will get "m2.out".
+* Extract all the lines of "m2.out" which are between the 2 lines:
+ ATOM NO.                 TYPE                        CHARGE      No. of ELECS.   s-Pop       p-Pop       d-Pop
+.....................................(extract)................................................................
+ NET CHARGE ON RESIDUES
+
+* Then, you should get something which is formatted similarly to the file which I called MopacCharge.
+  The name of your file should be "MopacCharge" also.
+
+* The total charge calculated by mopac is -2. 

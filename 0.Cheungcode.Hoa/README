@@ -1,0 +1,14 @@
+------------------------ Hoa Trinh --------------------------------------------------------------
+In Multi_Steps folder, you will find the following sub-folders:					*
+1.CACB			: Calpha_Cbeta Coordinates calculations					*
+2.HB			: Native HB contact calculations					*
+3.SC			: Native SC contact calculations					*
+4.PRMTOP		: PRMTOP preparation							*		
+Read the README files in each sub-folder for instruction on how to execute codes		*
+------------------------------------------------------------------------------------------------*
+Hoa simply add some lines in the original Cheung code to extract necessary inputs for Gromacs.  *
+Grep "Hoa" to find the added.									*
+One can run the script one time and get both inputs for Gromacs and Amber.			*
+------------------------------------------------------------------------------------------------*
+If you want to get inputs for Amber, make sure to have leap (an Amber tool)			*
+------------------------------------------------------------------------------------------------*

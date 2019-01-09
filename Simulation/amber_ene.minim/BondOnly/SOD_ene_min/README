@@ -1,0 +1,4 @@
+For this simulation:
+# Dihedral is turn off by changing lines 234 and 237 of the forcefield file (by setting dihedral force constant equals 0)
+# Pseudo is turn off by changing the first line of pseudo.inp to set force constant equal 0
+# triple is turn off by changing the first line of triple.inp to set force constant equal 0

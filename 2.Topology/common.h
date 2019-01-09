@@ -1,0 +1,137 @@
+#include <fstream>
+#include <iostream>
+#include <cstdio>
+#include <iomanip>
+#include <cstring>
+#include <stdio.h>
+#include<cmath>
+#include<vector>
+#include<numeric>
+#include <cstdlib>
+
+
+using namespace std;
+#define PI 3.14159265358979
+#define NUMCA 110
+#define NUMCB 90
+#define NUMAB 200
+#define NPAIR 163
+#define NPSEUDO 66
+#define fc 30.
+
+struct ATOMIC
+{
+  double x[NUMCA];
+  double y[NUMCA];
+  double z[NUMCA];
+  int num[NUMCA];
+};
+
+vector<double> COOR(double* i, double* j, double* k)
+{
+  vector<double> crd;
+  crd.push_back(*i);
+  crd.push_back(*j);
+  crd.push_back(*k);
+  return crd;
+}
+
+vector<double> VECTOR(vector<double>* vt1, vector<double>* vt2) /* vt12 = vt2 - vt1*/
+{
+  vector<double> vt;
+    for(int i=0; i<3; i++)
+    {
+      vt.push_back((*vt2)[i] - (*vt1)[i]);
+    }
+  return vt;
+}
+
+vector<double> cprod(vector<double>* vt1, vector<double>* vt2) /* vt1 x vt2 */
+{
+  vector<double> vt;
+  vt.push_back((*vt1)[1]*(*vt2)[2] - (*vt1)[2]*(*vt2)[1]);
+  vt.push_back((*vt1)[2]*(*vt2)[0] - (*vt1)[0]*(*vt2)[2]);
+  vt.push_back((*vt1)[0]*(*vt2)[1] - (*vt1)[1]*(*vt2)[0]);
+  return vt;
+}
+
+double iprod(vector<double>* vt1, vector<double>* vt2) /* vt1 . vt2 */
+{
+  return (*vt1)[0]*(*vt2)[0]+(*vt1)[1]*(*vt2)[1]+(*vt1)[2]*(*vt2)[2];
+}
+
+double magnitude(vector<double>* vt)
+{
+    return sqrt((*vt)[0]*(*vt)[0]+(*vt)[1]*(*vt)[1]+(*vt)[2]*(*vt)[2]);
+}
+
+vector<double> norm(vector<double>* vt)
+{
+  vector<double> newVt;
+  double amp = magnitude(vt);
+  for(int i=0; i<3; i++)
+    {
+      newVt.push_back((*vt)[i]/amp);
+    }
+  return newVt;
+}
+
+/* Copy from Gromacs source code with modification */
+double angle(vector<double>* a, vector<double>* b)                                                                   
+{ 
+    vector<double> w;
+    w = cprod (a,b);
+    double wlen, s;
+    wlen  = magnitude(&w);
+    s     = iprod(a, b);
+    return atan2(wlen, s) * 180 / PI;
+}
+
+
+double dih_angle(vector<double>* xi, vector<double>* xj, vector<double>* xk, vector<double>* xl)
+{
+    double ipr, phi, mlen, n1len, n2len, x, y;
+    vector<double> ij, jk, kl, m, n1, n2;
+    ij = VECTOR(xi, xj);
+    jk = VECTOR(xj, xk);
+    kl = VECTOR(xk, xl);
+    n1 = cprod(&ij, &jk);
+    n1len = magnitude(&n1);
+    m  = cprod(&n1, &jk);
+    mlen = magnitude(&m);
+    n2 = cprod(&jk, &kl);
+    n2len = magnitude(&n2); 
+    x = iprod(&n1, &n2)/(n1len*n2len);
+    y = iprod(&m, &n2)/(mlen*n2len);
+    phi = atan2(y,x);
+
+                    phi *= -1 ;
+		    phi = phi + PI;
+
+    return (phi/PI) * 180;
+}
+
+double idih_angle(vector<double>* xi, vector<double>* xj, vector<double>* xk, vector<double>* xl)
+{
+    double ipr, phi, mlen, n1len, n2len, x, y;
+    vector<double> ij, jk, kl, m, n1, n2;
+    ij = VECTOR(xi, xj);
+    jk = VECTOR(xj, xk);
+    kl = VECTOR(xk, xl);
+    n1 = cprod(&ij, &jk);
+    n1len = magnitude(&n1);
+    m  = cprod(&n1, &jk);
+    mlen = magnitude(&m);
+    n2 = cprod(&jk, &kl);
+    n2len = magnitude(&n2);
+    x = iprod(&n1, &n2)/(n1len*n2len);
+    y = iprod(&m, &n2)/(mlen*n2len);
+    phi = atan2(y,x);
+
+                    phi *= -1 ;
+                    phi = phi ;
+
+    return (phi/PI) * 180;
+}
+
+    

@@ -1,0 +1,25 @@
+#!/bin/csh
+#SBATCH -J 1
+
+#SBATCH -N 1
+
+#SBATCH --ntasks-per-node 1  # number of processors per node 
+
+#SBATCH -t 01:00:00
+
+
+cat << eof > md.in
+#        1         1         1         1         1         1         1         1
+&cntrl
+imin=0, irest=0, ntx=1,
+ntt=3, temp0=0.0, gamma_ln=5.0,
+ntb=0, ntc=2, ntf=2,
+nstlim=1, cut = 9999.0,
+ntwe=1, ntwx=1, ntpr=1/
+eof
+
+
+$AMBERHOME/sander.bulk.2014 -O -i md.in -o equil.out -p SOD.prmtop -c min.rst -r equil.rst -e SOD.en -x SOD.crd -inf mdinfo -chi chiral -b hb -d sidechain 
+
+
+

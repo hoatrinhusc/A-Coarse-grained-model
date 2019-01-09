@@ -1,0 +1,52 @@
+#Written by Hoa Trinh on 12/18/2017
+---------------------------------------------------------------------------------------------
+
+#OBJECTIVE:
+In this directory you will create:
+PDB file with only 2 types of atoms: CA and CB
+
+**********************************************************************************
+
+#STEPS:
+
+1) Command Line
+
+                   ./step1.csh  name
+
+name: name of protein 
+
+Example:                ./step1.csh ci2
+
+2) copy the outputs, i.e, the pdb file and the native map to the directory "2.Topology"
+
+***********************************************************************************
+
+#NOTES:
+
+1) The input files:
+
+	0.Cheungcode.Hoa/Multi_Steps/1.CACB/name.pdb
+        0.Cheungcode.Hoa/Multi_Steps/1.CACB/name.pdb.CBcrd
+	0.Cheungcode.Hoa/Multi_Steps/1.CACB/name.num
+
+2) The needed scripts and other files:
+
+	a) cpp code
+
+		countline.cpp						  : calculates the number of native pairs
+	        pdb.cpp						          : produce pdb file of only CAs and CBs
+
+	b) shell scripts 
+		
+		step1.csh						  : the main script
+
+
+	c) header file
+
+		common.header                                             : template, will be updated in step1.csh
+		common.h                                                  : updated header file
+
+3) The output files:
+
+	name.ab.pdb							  : pdb file of only CAs and CBs
+

@@ -1,0 +1,55 @@
+OBJECTIVE:
+In this directory you calculate the C_alpha and C_beta coordinate starting 
+from a pdb file. You also create and index file for all your coarse-grained
+sites. 
+__________________________________________________________________________
+
+STEPS:
+
+1) run step1.csh
+
+	./step1.csh pdb name
+
+pdb: is the pdb file for the protein 
+name: is any name you prefer for all the files used
+
+example: ./step1.csh 1CFD.pdb cfd
+
+2) copy the new PDB and NUM files to 2.HB and 3.SC directories 
+
+__________________________________________________________________________
+
+NOTES:
+
+1) The input files:
+
+	pdb file
+
+2) The needed scripts and other files:
+
+	a) c code
+
+		beta_coor.c						  : calculates the cbeta coordinate
+	        format.c						  : formats the crd file
+
+	b) shell scripts 
+		
+		step1.csh						  : the main script
+
+	c) perl scripts
+
+		removeH_OT.pl 						  : removes Hydrogen and OT atoms from the original pdb file
+	        numbers.pl						  : calculates NATOM and NTYPE for use in header files
+
+	d) header file
+
+		IOab.header (template, will be updated in step1.csh)  	  : header file
+
+3) The output files:
+
+	PDB								  : pdb file with no Hydrogen or OT's
+	NUM								  : file that has the natom and ntype
+	NATIVE								  : crd file of the native state
+	ATOM								  : atom index file
+
+4) The script "step1.csh" has more comments.

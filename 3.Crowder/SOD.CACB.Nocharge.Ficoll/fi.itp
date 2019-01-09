@@ -1,0 +1,9 @@
+ [ moleculetype ]
+ ;name   nrexcl
+ Ficoll           0
+
+ [atoms]
+ ;nr  type  resnr residue atom  cgnr charge  mass
+     1  Fi       1  Fi  Fi       1   0.000   95.000
+
+

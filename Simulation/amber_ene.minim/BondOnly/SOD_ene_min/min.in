@@ -1,0 +1,3 @@
+# 
+&cntrl
+maxcyc=10000, imin=1, cut=10000, ntb=0, ntpr=10, dt = 0.002, ntmin=2/

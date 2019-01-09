@@ -1,0 +1,73 @@
+OBJECTIVE:
+In this directory you create the PRMTOP of the coarse-grained protein 
+and pseudo.inp and triple.inp.
+
+**** IMPOTANT **** make sure you have the right path for amber directory
+__________________________________________________________________________
+
+STEPS:
+
+1) run step4.csh
+
+	./step4.csh name model
+
+name: is any name you prefer for all the files used
+model: BT,  GO, or HOMO
+map: BT map
+
+example: ./step4.csh  cfd GO  BTmap.dat
+
+
+__________________________________________________________________________
+
+NOTES:
+
+1) The input files:
+
+	PDB file
+	NATIVE file
+	PAIR file
+	ATOM file
+
+2) The needed scripts and other files:
+
+	a) c code
+
+	        frcfield_ab.xy.amber10.c				  : generates the force field for the protein (frc.go)
+		countHB.c						  : produces pseudo.inp
+		triple.c						  : produces triple.inp
+
+	b) shell scripts 
+		
+		step4.csh						  : the main script
+
+	c) perl scripts
+
+		calc6-12out.GO.parm7.tmp (template) 			  : calculates the LJ parameters for GO model
+		calc6-12out.HOMO.parm7.tmp (template)			  : calculates the LJ parameters for homo GO model
+		calc6-12out.BT.parm7.tmp (template)			  : calculates the LJ parameters for BT model
+
+	d) header file
+
+		IOablinux.header (template, will be updated in step4.csh) : header file
+
+3) The output files:
+
+	TOP								  : prmtop file
+	pseudo.inp
+	triple.inp
+
+4) The script "step4.csh" has more comments.
+
+
+
+
+___________________________________________________________________________________________________________________
+___________________________________________________________________________________________________________________
+                                                UPDATES
+___________________________________________________________________________________________________________________
+
+Jul 3, 2012 Dirar: Replacing the EP residue with ZP. EP is confused with "Extra Points" in Amber10.
+
+
+
