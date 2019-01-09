@@ -1,4 +1,7 @@
 
+The code is to create the Gromacs topology file for the coarse-grained model described in the paper: "Exploring the Interplay between Topology and Secondary Structural Formation in the Protein Folding Problem", Cheung et al, J. Phys. Chem. B 2003, 107, 11193-11200
+
+
 # The script "run.sh" will compile all the codes in 0.Cheungcode.Hoa, 1.Preparation and 2.Topology
 
 Usage:            sh run.sh     pdb                name   chain  model      map
